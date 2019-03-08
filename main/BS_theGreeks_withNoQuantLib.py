@@ -1,4 +1,5 @@
-"""Calculating the partial derivatives for a Black Scholes Option (Call)
+""" Taken from: http://janroman.dhis.org/stud/I2014/BS2/BS_Daniel.pdf
+Calculating the partial derivatives for a Black Scholes Option (Call)
 # S - Stock price
 # K - Strike price
 # T - Time to maturity
