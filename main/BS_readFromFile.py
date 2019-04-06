@@ -1,15 +1,30 @@
 # Taken from: http://gouthamanbalaraman.com/blog/european-option-binomial-tree-quantlib-python.html
 import QuantLib as ql 
 from math import *
+import json
 
+def read_params():
+  filename = "input_params_valsFromOldBS.json"
+  with open(filename, 'r') as f:
+      dict_from_file = json.load(f)
+  initial_stock_price = dict_from_file['initial_stock_price']
+  strike_price = dict_from_file['strike_price']
+  risk_free_interest_rate = dict_from_file['risk_free_interest_rate']
+  stock_annualized_volatility = dict_from_file['stock_annualized_volatility']  #Todo: calaculte this according to what Nitay A. suggested
+  time_span_in_years = dict_from_file['time_span_in_years']
+  dividend_rate = dict_from_file['dividend_rate']
+  return initial_stock_price, strike_price, risk_free_interest_rate, stock_annualized_volatility, time_span_in_years, dividend_rate
+
+spot_price, strike_price, risk_free_rate, volatility, dt, dividend_rate = read_params()
+assert dt == 1
 # option data
 maturity_date = ql.Date(15, 1, 2016)
-spot_price = 100#127.62
-strike_price = 120#130
-volatility = 0.2 #0.20 # the historical variance for a year
-dividend_rate =  0.02#0.0163
+# spot_price = 100#127.62
+# strike_price = 120#130
+# volatility = 0.2 #0.20 # the historical variance for a year
+# dividend_rate =  0.02#0.0163
 
-risk_free_rate = 0.04#0.001 
+# risk_free_rate = 0.04#0.001 
 day_count = ql.Actual365Fixed()
 calendar = ql.UnitedStates()
 
@@ -44,7 +59,7 @@ bsm_process = ql.BlackScholesMertonProcess(spot_handle,
 
 european_option.setPricingEngine(ql.AnalyticEuropeanEngine(bsm_process))
 bs_call_price = european_option.NPV()
-print (f"The theoretical price (call) is {bs_call_price:.2f}")
+print (f"The theoretical price (call) is {bs_call_price}")
 
 
 option_type = ql.Option.Put
@@ -75,7 +90,7 @@ bsm_process = ql.BlackScholesMertonProcess(spot_handle,
 
 european_option.setPricingEngine(ql.AnalyticEuropeanEngine(bsm_process))
 bs_put_price = european_option.NPV()
-print (f"The theoretical price is (put) {bs_put_price:.2f}")
+print (f"The theoretical price is (put) {bs_put_price}")
 
 #=    Spot      *EXP((Rate          -Div          )*T_Mat)
 T_Mat = round(ql.Actual360().yearFraction(calculation_date,maturity_date)) #The round function was added because otherwise T_Mat would be 1.01..

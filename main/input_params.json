@@ -1,0 +1,9 @@
+{
+	"initial_stock_price": 100.0,
+	"stock_annualized_volatility": 1.0,
+	"risk_free_interest_rate": 4.0,
+	"strike_price": 120.0,
+	"time_span_in_years": 1.0,
+	"dividend_rate": 0.02,
+	"list1": ["a", 1]
+}
