@@ -1,11 +1,9 @@
-#!/usr/bin/python
-
-import sys
 import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+np.random.seed(18) #Todo: run 10K times with different seed s.t. I'll have enough samples to calculate the average on
 
 def get_avg(l):
 	return sum(l)/float(len(l))
@@ -51,38 +49,23 @@ def read_params():
 	time_span_in_years = dict_from_file['time_span_in_years']
 	return initial_stock_price, strike_price, risk_free_interest_rate, stock_annualized_volatility, time_span_in_years
 
-def calc_prices(random_seed):
-	initial_stock_price, strike_price, mu, sigma, dt = read_params()
-	n=1000000
-	np.random.seed(random_seed)
-	random_normal_dist_samples = get_standardized_normal_dist_samples(num_of_samples=n)
+initial_stock_price, strike_price, mu, sigma, dt = read_params()
+n=1000000
+random_normal_dist_samples = get_standardized_normal_dist_samples(num_of_samples=n)
 
 
-	#Todo: Nitay suggested that I'll do cumsum(on random_normal_dist_samples...?) in this stage instead of cumprod after the exponent ince it'll be more accurate
-	step=np.exp((mu-sigma**2/2)*dt)*np.exp(sigma*random_normal_dist_samples) 
-	# cumprodCalc = initial_stock_price*step.cumprod()
-	cumprodCalc = initial_stock_price*step[0]
-	# print(f"initial_stock_price*step {cumprodCalc}")
 
-	estimated_stock_price = get_avg(cumprodCalc)
-	# print(f"get_avg(cumprodCalc) {get_avg(cumprodCalc)}")
+#Todo: Nitay suggested that I'll do cumsum(on random_normal_dist_samples...?) in this stage instead of cumprod after the exponent ince it'll be more accurate
+step=np.exp((mu-sigma**2/2)*dt)*np.exp(sigma*random_normal_dist_samples) 
+# cumprodCalc = initial_stock_price*step.cumprod()
+cumprodCalc = initial_stock_price*step[0]
+# print(f"initial_stock_price*step {cumprodCalc}")
 
-	call_prices = list(map(lambda x: getCallOptionReturn(x, strike_price), cumprodCalc))
-	estimated_call_price = get_avg(call_prices)
-	# print(f"The average call return is {estimated_call_price}")
+estimated_stock_price = get_avg(cumprodCalc)
+print(f"get_avg(cumprodCalc) {get_avg(cumprodCalc)}")
 
-	put_prices = list(map(lambda x: getPutOptionReturn(x, strike_price), cumprodCalc))
-	estimated_put_price = get_avg(put_prices)
-	# print(f"The average put return is {estimated_put_price}")
+call_prices = list(map(lambda x: getCallOptionReturn(x, strike_price), cumprodCalc))
+print(f"The average call return is {get_avg(call_prices)}")
 
-	return estimated_stock_price, estimated_call_price, estimated_put_price
-
-# def main():
-# 	seed =  int(sys.argv[1])
-# 	print(f"Seed {seed}")
-# 	np.random.seed(seed) #Todo: run 10K times with different seed s.t. I'll have enough samples to calculate the average on
-# 	return calc_prices()
-
-
-# if __name__ == '__main__':
-#     main()
+put_prices = list(map(lambda x: getPutOptionReturn(x, strike_price), cumprodCalc))
+print(f"The average put return is {get_avg(put_prices)}")
