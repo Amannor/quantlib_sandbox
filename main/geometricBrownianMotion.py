@@ -52,28 +52,20 @@ def read_params():
 	return initial_stock_price, strike_price, risk_free_interest_rate, stock_annualized_volatility, time_span_in_years
 
 def calc_prices(random_seed):
-	initial_stock_price, strike_price, mu, sigma, dt = read_params()
-	n=1000000
+	initial_stock_price, strike_price, mu, sigma, T = read_params()
+	n=100000
+	dt = T/n
 	np.random.seed(random_seed)
-	random_normal_dist_samples = get_standardized_normal_dist_samples(num_of_samples=n)
-
+	random_normal_dist_samples = get_standardized_normal_dist_samples(num_of_samples=n)[0] #We take [0] because the return object is an array of size 1 with the desired list as its memeber
 
 	#Todo: Nitay suggested that I'll do cumsum(on random_normal_dist_samples...?) in this stage instead of cumprod after the exponent ince it'll be more accurate
-	step=np.exp((mu-sigma**2/2)*dt)*np.exp(sigma*random_normal_dist_samples) 
-	# cumprodCalc = initial_stock_price*step.cumprod()
-	cumprodCalc = initial_stock_price*step[0]
-	# print(f"initial_stock_price*step {cumprodCalc}")
+	series_formula = (mu-sigma**2/2)*dt + sigma*random_normal_dist_samples
+	series_cumsum = series_formula.cumsum()
+	estimated_stock_price_series = initial_stock_price * np.exp(series_cumsum)
+	estimated_stock_price = estimated_stock_price_series[-1]
 
-	estimated_stock_price = get_avg(cumprodCalc)
-	# print(f"get_avg(cumprodCalc) {get_avg(cumprodCalc)}")
-
-	call_prices = list(map(lambda x: getCallOptionReturn(x, strike_price), cumprodCalc))
-	estimated_call_price = get_avg(call_prices)
-	# print(f"The average call return is {estimated_call_price}")
-
-	put_prices = list(map(lambda x: getPutOptionReturn(x, strike_price), cumprodCalc))
-	estimated_put_price = get_avg(put_prices)
-	# print(f"The average put return is {estimated_put_price}")
+	estimated_call_price = getCallOptionReturn(estimated_stock_price, strike_price)
+	estimated_put_price = getPutOptionReturn(estimated_stock_price, strike_price)
 
 	return estimated_stock_price, estimated_call_price, estimated_put_price
 
